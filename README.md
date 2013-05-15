@@ -15,10 +15,15 @@ And turns it into a `julia` call like:
 
 
 ```
-using DThree
-d3 = D3()
 d3.selectAll("p").style("color", "white")
 ```
+
+(Only after)
+```
+using DThree
+d3 = D3()
+```
+
 
 Okay, you might guess the style. This just pieces together a string of `JavaScript` that will get inserted into a web page. The `render` method creates the code.
 
@@ -60,7 +65,7 @@ DThree.nv_addGraph(q) ## wrap in a function
 browse(q)             ## open chart in a browser
 ```
 
-The `q` object has `*` overloaded (it should be `*!` as it modifies `q` when used) to build up commands, similar to how `+` is used with `R`'s `ggplot` interface. This object has the `browse` method which is used to past the commands into a web page and open them up with the default browser. Embedding the commands into a web page would be straightforward.
+The `q` object has `*` overloaded (it should be `*!` as it modifies `q` when used) to build up commands, similar to how `+` is used with `R`'s `ggplot` interface. This object has the `browse` method which is used to paste the commands into a web page and open them up with the default browser. Embedding the commands into a web page would be straightforward.
 
 
 
@@ -69,34 +74,15 @@ The `q` object has `*` overloaded (it should be `*!` as it modifies `q` when use
 Like the `GoogleCharts` package, some off-the-shelf charts can be produced from a simple function call:
 
 ```
-plot(sin, 0, pi) | browse
-plot(sin, 0, pi) | browse
+plot(sin, 0, pi) | browse	      ## simple graph
+
+plot([sin, cos], 0, pi) | browse      ## pair of graphs
+
 iris = data("datasets", "iris")[2:6]  ## using RDatasets
-scatterChart(iris, "Species") | browse
-barChart([1,2,3], ["2007", "2010", "2012"]) | browse
+scatterChart(iris, "Species") | browse  ## scatter plots by group
+
+barChart([1,2,3], ["2007", "2010", "2012"]) | browse  ## simple bar chart
+
 d = DataFrame(x= [now() + days(1:5), now() + days(1:5)], y = rand(10), f=[rep("a",5), rep("b", 5)])
-stackedAreaChart(d, "f")  | browse
+stackedAreaChart(d, "f")  | browse    ## stacked area chart grouped by factor f
 ```
-
-The first of these produces this graphic:
-
-
-<link href="https://raw.github.com/novus/nvd3/master/src/nv.d3.css" media="all" rel="stylesheet" type="text/css" />
-<script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-<script src="http://cdnjs.cloudflare.com/ajax/libs/d3/2.10.0/d3.v2.min.js" charset="utf-8"></script>
-<script src="http://nvd3.org/lib/fisheye.js" charset="utf-8"></script>
-<script src="https://raw.github.com/novus/nvd3/master/nv.d3.js" charset="utf-8"></script>
-
-<div id='chart'><svg style='height:500px'></svg></div>
-
-<script>
-$(document).ready(function() {
-nv.addGraph(function() {
-var chart = nv.models.stackedAreaChart().x(function(d) {return d[0]}).y(function(d) {return d[1]}).clipEdge(true);
-chart.xAxis.showMaxMin(false).tickFormat(function(d) { return d3.time.format('%x')(new Date(d))})
-chart.yAxis.tickFormat(d3.format(",.02f"))
-d3.select("#chart svg").datum([{"key":"a","values":[[1.368672069234e12,0.06609182360191879],[1.368758469234e12,0.8632879573792165],[1.368844869234e12,0.6739644438656134],[1.368931269234e12,0.7122692953773826],[1.369017669234e12,0.3719229987265451]]},{"key":"b","values":[[1.368672069262e12,0.5427898009563044],[1.368758469262e12,0.10809955903755553],[1.368844869262e12,0.37920864988534553],[1.368931269262e12,0.9835455951617929],[1.369017669262e12,0.9999928743280255]]}]).transition().duration(500).call(chart)
-nv.utils.windowResize(chart.update)
-return chart;});
-});
-</script>
