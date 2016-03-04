@@ -35,54 +35,59 @@ If the field isn't present, then the interface can look one of two ways:
 d3[:selectAll]("p")._("color", "white") ## two ways [:symbol](args...) or _("meth", args...)
 ```
 
-By default, strings are quoted. To stop that, wrap the string in `I` (like `R`'s as-is operator). This is necessary when the argument refers to a `JavaScript` object.
+By default, strings are quoted. To stop that, wrap the string in
+`asis` (like `R`'s `I` operator). This is necessary when the argument
+refers to a `JavaScript` object.
 
-The `nvd3` code makes it easy to use `d3` to produce graphics. The `functionChart` function basically does this
+
+## Blink
+
+This package also borrows the figure manipulation tools of `Immerse`
+and the HTML windows of `Blink` to create canvases to manipulate. The
+basic idea would follow from this example
 
 ```
-f,a,b = sin, 0, pi
-x = linspace(a, b, 250)
-data = [{values=>[{:x=>x, :y=>f(x)} for x in x], :key=>"Sine"}] | JSON.to_json | I
+using DThree
+style = """
+
+.chart div {
+  font: 10px sans-serif;
+  background-color: steelblue;
+  text-align: right;
+  padding: 3px;
+  margin: 1px;
+  color: white;
+  }
+"""
+  
+w = figure()
+DThree.empty_page(w, style=style) # loads D3 libraries
 
 d3 = D3()
-q = D3Plot()
+d3.var("p").select("body").selectAll("p").
+    data([4, 8, 15, 16, 23, 42]).
+    text(asis"function(d) { return d; }") |> js
+d3.receiver("p").enter().append("p").
+	text(asis"function(d) { return d; }") |> js
 
-## cf. http://nvd3.org/ghpages/line.html
-
-## var chart = nv.models.lineChart();
-q * d3.var("chart").receiver("nv")._("models.lineChart")    
-
-## chart.xAxis.axisLabel("x").tickFormat(d3.format(",.02"));
-q * d3.receiver("chart.xAxis").axisLabel("x").tickFormat(D3().format(",.02f"))       
-
-## chart.yAxis.axisLabel("y").tickFormat(d3.format(",.02"));
-q * d3.receiver("chart.yAxis").axisLabel("y").tickFormat(D3().format(",.02f"))
-
-##  d3.select("#chart svg").datum(data).transition().duration(500).call(chart);
-q * d3.select("#chart svg").datum(data).transition().duration(500).call(I("chart"))
-
-DThree.nv_addGraph(q) ## wrap in a function
-browse(q)             ## open chart in a browser
+d3.receiver("p")._("exit")._("remove") |> js
 ```
 
-The `q` object has `*` overloaded (it should be `*!` as it modifies `q` when used) to build up commands, similar to how `+` is used with `R`'s `ggplot` interface. This object has the `browse` method which is used to paste the commands into a web page and open them up with the default browser. Embedding the commands into a web page would be straightforward.
-
-
-
-## plotting functions
-
-Like the `GoogleCharts` package, some off-the-shelf charts can be produced from a simple function call:
-
 ```
-plot(sin, 0, pi) | browse	      ## simple graph
+using DThree
+w = figure()
+DThree.empty_page(w) # loads D3 libraries
 
-plot([sin, cos], 0, pi) | browse      ## pair of graphs
+d3 = D3()
+d3.select("body").
+    style("color", "black").
+    style("background-color", "white") |> js
+d3.select("body").append("div")        |> js
 
-iris = data("datasets", "iris")[2:6]  ## using RDatasets
-scatterChart(iris, "Species") | browse  ## scatter plots by group
-
-barChart([1,2,3], ["2007", "2010", "2012"]) | browse  ## simple bar chart
-
-d = DataFrame(x= [now() + days(1:5), now() + days(1:5)], y = rand(10), f=[rep("a",5), rep("b", 5)])
-stackedAreaChart(d, "f")  | browse    ## stacked area chart grouped by factor f
-```
+d3.select("div").
+    data([4, 8, 15, 16, 23, 42]).
+	  enter().append("div").
+  style("width", asis"""function(d) { return d * 10 + "px"; }""").
+  text(asis"""function(d) { return d; }""")  |> js
+	
+"""

@@ -1,23 +1,24 @@
 <html>
   <head>
-    <title>Graphic</title>
-    <link href="https://raw.github.com/novus/nvd3/master/src/nv.d3.css" media="all" rel="stylesheet" type="text/css" />
+    <title>{{:title}}</title>
     <style>{{{:style}}}</style>
 
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/2.10.0/d3.v2.min.js" charset="utf-8"></script>
-    <script src="http://nvd3.org/lib/fisheye.js" charset="utf-8"></script>
-    <script src="https://raw.github.com/novus/nvd3/master/nv.d3.js" charset="utf-8"></script>
- <!--[if lt IE 9]>
+    <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js" charset="utf-8"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js" charset="utf-8"></script>
+<!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
   </head>
   <body>
-<div id='chart'><svg style='height:500px'></svg></div>
+<div id="PLOTPARENT"><div id="PLOT"></div></div>
   </body>
+
 <script>
 $(document).ready(function() {
 {{{:script}}}
 });
+
 </script>
 </html>

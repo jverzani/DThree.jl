@@ -1,4 +1,7 @@
+#__precompile__(true)
 ## Code to make writing of d3 javascript d3-like.
+
+
 
 module DThree
 
@@ -6,22 +9,18 @@ import Base.getindex, Base.push!
 
 using JSON
 using Mustache
-using DataFrames
-using Calendar
+using Blink
 
-include("colors.jl")
-include("plots.jl")
-
-export I, @I_str, D3, D3Plot, browse
-export plot, functionChart, scatterChart, barChart, stackedAreaChart
+export asis, @asis_str, D3, browse
+export js, loadurl, loadfile
 
 
 type AsIs
     x
 end
-I(x) = AsIs(x)
-macro I_str(x)
-    I(x)
+asis(x) = AsIs(x)
+macro asis_str(x)
+    asis(x)
 end
 
 
@@ -34,7 +33,7 @@ end
 ## by default this uses JavaScript d3 object as receiver. This can be changed with d3.receiver("chart"). ...
 ## arguments are converted via to_json, except:
 ## * functions are treated as callbacks into julia. These are asynchronous.
-## * use I"x" or I("x") to treat object "as is". This is needed to quote JavaScript functions
+## * use asis"x" or asis("x") to treat object "as is". This is needed to quote JavaScript functions
 ## TODO: PyCall this baby so members can be added from a list of symbols
 type D3
     cmd
@@ -44,6 +43,7 @@ type D3
     eval_js
     render
     _
+    __
     select
     selectAll
     data
@@ -80,15 +80,15 @@ type D3
         tmp = tempname() * ".html"
 
         ## for setting var nm = ...
-        this.var      = (value::Union(Nothing, String)) -> begin this._var = value; this end
+        this.var      = (value::Union{Void, AbstractString}) -> begin this._var = value; this end
         
         ## for setting reciever.meth1(...).meth2. ... where default is d3.
-        this.receiver = (value::String) -> begin this.cmd = value; this end
+        this.receiver = (value::AbstractString) -> begin this.cmd = value; this end
 
         ## return JavaScript as string, reset cmd
         this.render = () -> begin
             out = this.cmd
-            if !isa(this._var, Nothing)
+            if !isa(this._var, Void)
                 out = "var $(this._var) = " * out * ";"
             end
             this.receiver("d3")
@@ -101,6 +101,10 @@ type D3
             args = map(u -> prep(u), args)
             args = join(args, ", ")
             this.cmd = "$(this.cmd).$meth($args)"
+            this
+        end
+        this.__ = (prop) -> begin # add a property
+            this.cmd = "$(this.cmd).$prop"
             this
         end
         ## generate in @eval map meth by replacing _ with symbol(replace("scale_linear", "_", "."))
@@ -144,47 +148,22 @@ end
 ## used for easier? access D3()[:one](2)[:three]("three") ...
 getindex(x::D3, i::Symbol) = (args...) -> x._(i, args...)
 
-prep(x::Any) = to_json(x)
+prep(x::Any) = json(x)
 prep(x::AsIs) = string(x.x)
 ## NEED prep(d3, x::Function) to callback into `julia`
-prep(x::D3) = prep(I(x.render()))
+prep(x::D3) = prep(asis(x.render()))
 
 
-## Type to hold D3 commands
-type D3Plot
-    q
-    D3Plot() = new([""])
-end
-
-import Base.push!, Base.get, Base.*
-
-push!(x::D3Plot, cmd) = push!(x.q, cmd)
-## p * cmd; not p = p*cmd
-*(p::D3Plot, x::D3) = push!(p, x.render())
-*(p::D3Plot, x::String) = push!(p, x)
 
 
-function nv_addGraph(x::D3Plot)
-    x.q = ["", "nv.addGraph(function() {", x.q[2:end], "nv.utils.windowResize(chart.update)", "return chart;});" ]
-end
+include("colors.jl")
+include("display.jl")
+include("blink.jl")
+#include("plots.jl")
+include("plotly.jl")
 
-function get(x::D3Plot)
-    if length(x.q) > 1
-        out = join(x.q[2:end], "\n")
-    else
-        out = ""
-    end
-    out
-end
-clear(x::D3Plot) =  x.q=[""]
-    
-function browse(x::D3Plot; style="")
-    tpl = Mustache.template_from_file(Pkg.dir("DThree", "tpl", "d3.html"))
-    f = tempname() * ".html"
-    io = open(f, "w")
-    Mustache.render(io, tpl, {:script=>get(x), :style=>style})
-    close(io)
-    run(`open $f`)
-end
+
+
+
 
 end ## module

@@ -15,14 +15,14 @@ dataset = "[" * join(["[$x,$y]" for (x,y) in zip(x,y)], ", ") * "]"
     p * d3.var("xScale").scale_linear().domain([min(x),max(x)]*1.1).range([0, width])
     p* d3.var("yScale").scale_linear().domain([min(y),max(y)]*1.1).range([height, 0])
     ## axes
-    p * d3.var("xAxis").svg_axis().scale(I("xScale")).orient("bottom")
-    p * d3.receiver("svg").append("g").attr("class", "axis").attr("transform", "translate(0,$(height - padding))").call(I("xAxis"))
-    p * d3.var("yAxis").svg_axis().scale(I("yScale")).orient("left").ticks(5)
-    p * d3.receiver("svg").append("g").attr("class", "axis").attr("transform", "translate($padding, 0)").call(I("yAxis"))
+    p * d3.var("xAxis").svg_axis().scale(asis("xScale")).orient("bottom")
+    p * d3.receiver("svg").append("g").attr("class", "axis").attr("transform", "translate(0,$(height - padding))").call(asis("xAxis"))
+    p * d3.var("yAxis").svg_axis().scale(asis("yScale")).orient("left").ticks(5)
+    p * d3.receiver("svg").append("g").attr("class", "axis").attr("transform", "translate($padding, 0)").call(asis("yAxis"))
 
-    p * d3.receiver("svg").selectAll("circle").data(I(dataset)).enter().append("circle").
-      attr("cx", I("function(d) {return xScale(d[0])}")).
-      attr("cy", I("function(d) {return yScale(d[1])}")).
+    p * d3.receiver("svg").selectAll("circle").data(asis(dataset)).enter().append("circle").
+      attr("cx", asis("function(d) {return xScale(d[0])}")).
+      attr("cy", asis("function(d) {return yScale(d[1])}")).
       attr("r", 5)
 
 
