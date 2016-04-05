@@ -40,12 +40,6 @@ By default, strings are quoted. To stop that, wrap the string in
 refers to a `JavaScript` object.
 
 
-## Blink
-
-This package also borrows the figure manipulation tools of `Immerse`
-and the HTML windows of `Blink` to create canvases to manipulate. The
-basic idea would follow from this example
-
 ```
 using DThree
 style = """
@@ -64,30 +58,31 @@ w = figure()
 DThree.empty_page(w, style=style) # loads D3 libraries
 
 d3 = D3()
-d3.var("p").select("body").selectAll("p").
-    data([4, 8, 15, 16, 23, 42]).
-    text(asis"function(d) { return d; }") |> js
-d3.receiver("p").enter().append("p").
-	text(asis"function(d) { return d; }") |> js
+d3.select("body").append("div").attr("class", "chart") |>js
 
-d3.receiver("p")._("exit")._("remove") |> js
-```
+data = [4,8,16,23,42]
 
-```
-using DThree
-w = figure()
-DThree.empty_page(w) # loads D3 libraries
-
-d3 = D3()
-d3.select("body").
-    style("color", "black").
-    style("background-color", "white") |> js
-d3.select("body").append("div")        |> js
-
-d3.select("div").
-    data([4, 8, 15, 16, 23, 42]).
+d3.select(".chart").selectAll("div").
+    data(data).
 	  enter().append("div").
   style("width", asis"""function(d) { return d * 10 + "px"; }""").
   text(asis"""function(d) { return d; }""")  |> js
 	
-"""
+
+```
+
+
+
+## Blink
+
+This package also borrows the figure manipulation tools of `Immerse`
+and the HTML windows of `Blink` to create canvases to manipulate. The
+basic idea would follow from this example
+
+```
+using DThree, Plots
+w = figure()
+Blink.title(w, "title")
+plot(sin, 0, 2pi)
+plot!(cos)
+```
